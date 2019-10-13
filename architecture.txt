@@ -1,0 +1,22 @@
+Structure:
+
+Data Access layer (dao-s) provide direct interface between storage system and application.
+Model entities are headless Java objects representing corresponding structures in a storage system.
+Service layer is responsible for data pre(post)processing.
+Controller layer is external interfaces for 3-rd parties.
+
+
+Model:
+
+In order to provide asynchronous document updates, stateless change description is used.
+Such changes stay valid on concurrent history modifications. To achieve this properties on modifications,
+they are bound to document position UID-s, which are assigned by each client individually in collisionless
+manner. e.g. (sessionId<<32 + characterInsertOrder), so that it is possible to introduce new valid changes even during
+synchronization with a server.
+
+Concurrent removals are implemented using set of removed character UID-s. For simple traffic usage optimisation, range-compression is applied.
+I.E. sequential-created characters are replaced with according range description.
+Sample client implementation keeps removed character nodes in memory, marking them with a flag to allow future usage for concurrent insertions or undo operations.
+
+In present implementation introduced changes are not modified by a server in any way, yet final document structure depends
+on insert appearance order, if they are bound to the same position. In this case inserts need to be reordered.
